@@ -10,7 +10,7 @@ export default getRequestConfig(async ({ locale }) => {
   } catch (e) {
     return {
       messages: (await import(`./messages/${defaultLocale}.json`)).default,
-    };
+    }; 
   }
 });
 
