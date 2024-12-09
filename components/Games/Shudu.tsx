@@ -4,24 +4,39 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Clock } from 'lucide-react';
 
+// 定义类型
+type Difficulty = 'easy' | 'medium' | 'hard';
+type Board = string[][];
+type Position = { row: number; col: number } | null;
+type Particle = {
+  x: number;
+  y: number;
+  emoji: string;
+  speed: number;
+  rotation: number;
+  rotationSpeed: number;
+  opacity: number;
+};
+type Error = { row: number; col: number };
+
 const EmojiSudoku = () => {
   const emojis = ['🐱', '🐰', '🐼', '🦊'];
   const celebrationEmojis = ['🌸', '⭐', '✨', '🎉', '🌟'];
-  const [difficulty, setDifficulty] = useState('easy');
-  const [board, setBoard] = useState([]);
-  const [solution, setSolution] = useState([]);
-  const [selected, setSelected] = useState(null);
+  const [difficulty, setDifficulty] = useState<Difficulty>('easy');
+  const [board, setBoard] = useState<Board>([]);
+  const [solution, setSolution] = useState<Board>([]);
+  const [selected, setSelected] = useState<Position>(null);
   const [isComplete, setIsComplete] = useState(false);
-  const [particles, setParticles] = useState([]);
+  const [particles, setParticles] = useState<Particle[]>([]);
   const [time, setTime] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
-  const [errors, setErrors] = useState([]);
+  const [errors, setErrors] = useState<Error[]>([]);
   const [showErrors, setShowErrors] = useState(false);
   const [attempts, setAttempts] = useState(0);
   const maxAttempts = 3;
 
   // 花瓣动画参数生成
-  const createParticle = () => ({
+  const createParticle = (): Particle => ({
     x: Math.random() * window.innerWidth,
     y: -20,
     emoji: celebrationEmojis[Math.floor(Math.random() * celebrationEmojis.length)],
@@ -39,12 +54,12 @@ const EmojiSudoku = () => {
   };
 
   // 检查特定位置是否正确
-  const isCellCorrect = (row, col) => {
+  const isCellCorrect = (row: number, col: number): boolean => {
     return board[row][col] === solution[row][col];
   };
 
   // 检查是否在行、列、方块中已存在
-  const isValid = (board, row, col, value) => {
+  const isValid = (board: Board, row: number, col: number, value: string): boolean => {
     for (let x = 0; x < 4; x++) {
       if (board[row][x] === value) return false;
       if (board[x][col] === value) return false;
@@ -62,10 +77,10 @@ const EmojiSudoku = () => {
   };
 
   // 生成完整的解决方案
-  const generateSolution = () => {
-    let grid = Array(4).fill().map(() => Array(4).fill(''));
+  const generateSolution = (): Board => {
+    let grid: Board = Array(4).fill([]).map(() => Array(4).fill(''));
     
-    const solve = () => {
+    const solve = (): boolean => {
       for (let row = 0; row < 4; row++) {
         for (let col = 0; col < 4; col++) {
           if (grid[row][col] === '') {
@@ -112,7 +127,7 @@ const EmojiSudoku = () => {
   }, []);
 
   // 根据难度移除一些数字
-  const createPuzzle = (solution, difficulty) => {
+  const createPuzzle = (solution: Board, difficulty: Difficulty): Board => {
     let puzzle = JSON.parse(JSON.stringify(solution));
     let cellsToRemove = {
       easy: 6,
@@ -133,8 +148,8 @@ const EmojiSudoku = () => {
   };
 
   // 检查所有已填写的格子是否正确
-  const validateBoard = () => {
-    const newErrors = [];
+  const validateBoard = (): boolean => {
+    const newErrors: Error[] = [];
     let hasError = false;
     
     for (let i = 0; i < 4; i++) {
@@ -172,14 +187,14 @@ const EmojiSudoku = () => {
   };
 
   // 处理单元格点击
-  const handleCellClick = (row, col) => {
+  const handleCellClick = (row: number, col: number) => {
     if (board[row][col] === '' && isPlaying) {
       setSelected({ row, col });
     }
   };
 
   // 处理emoji选择
-  const handleEmojiSelect = (emoji) => {
+  const handleEmojiSelect = (emoji: string) => {
     if (selected && isPlaying) {
       const newBoard = [...board];
       newBoard[selected.row][selected.col] = emoji;
@@ -202,9 +217,8 @@ const EmojiSudoku = () => {
     }
   };
 
-  // 计时器效果
   useEffect(() => {
-    let timer;
+    let timer: NodeJS.Timeout;
     if (isPlaying && !isComplete) {
       timer = setInterval(() => {
         setTime(prev => prev + 1);
@@ -217,7 +231,7 @@ const EmojiSudoku = () => {
     initializeGame();
   }, [difficulty]);
 
-  const getCellClassName = (i, j) => {
+  const getCellClassName = (i: number, j: number): string => {
     const baseClass = "h-16 flex items-center justify-center text-2xl border-2 rounded cursor-pointer transition-colors duration-200";
     const selectedClass = (i === selected?.row && j === selected?.col) ? 'border-pink-500 bg-pink-100' : 'border-pink-200 bg-white';
     const patternClass = (Math.floor(i/2) === 0 && Math.floor(j/2) === 0) || (Math.floor(i/2) === 1 && Math.floor(j/2) === 1) ? 'bg-opacity-50' : '';
